@@ -8,11 +8,14 @@ setup(
         "ElevenLabs",
         "dotenv",
         "PySide6",
-        "win32gui",
-        "win32con",
         "ultralytics",
         "collections",
         "pyautogui",
+
         "opencv-python"
+
+        "win32gui",
+        "win32con"
+
     ],
 )

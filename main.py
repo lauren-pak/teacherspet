@@ -35,7 +35,7 @@ def main():
             cam._init_me(person_boxes, cx, cy)
             cam._update_me(person_boxes)
 
-            min_closest_area = int(0.03 * W * H)
+            min_closest_area = int(0.1 * W * H)
 
             other_people, closest_box, closest_conf, found_other = cam._find_others(
                 person_boxes, min_closest_area=min_closest_area
