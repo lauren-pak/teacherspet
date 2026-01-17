@@ -2,8 +2,11 @@
 import subprocess, platform
 from urllib.parse import urlparse
 
+# Returns string name of active domain, and whether its illegal (boolean)
 
 def get_chrome_active_domain():
+    illegal_apps = ["snap", "instagram", "chatgpt", "tiktok", "youtube", "netflix", "discord", "twitter", "facebook"]
+    illegal = False
     if platform.system() == "Darwin":
         script = '''
         tell application "Google Chrome"
@@ -28,15 +31,22 @@ def get_chrome_active_domain():
     
         p = subprocess.run(["osascript", "-e", script], capture_output=True, text=True)
         if p==0: return "I am doing nothing, not even on task."
-        return p.stdout.strip()
+        for i in illegal_apps:
+            if i in p.stdout.strip().lower():
+                illegal = True
+
+        return p.stdout.strip(), illegal
     
     elif platform.system() == "Windows":
         import win32gui
         hwnd = win32gui.GetForegroundWindow()
         title = win32gui.GetWindowText(hwnd)
-        return title
-    
-print(get_chrome_active_domain())
+        for i in illegal_apps:
+            if i in title.lower():
+                illegal = True
+        return title, illegal
+
+#print(get_chrome_active_domain())
 
 
 

@@ -140,12 +140,14 @@ class HeartbeatOverlay(QtWidgets.QWidget):
 
         painter.fillRect(self.rect(), gradient)
 
+
     def run_overlay_process(duration=5):
         """
         Runs the overlay in THIS SAME FILE, but as a new process:
         python3 teacherspet_onefile.py --overlay 5
         """
         subprocess.Popen([sys.executable, __file__, "--overlay", str(duration)])
+
 
 
     def overlay_main(duration=5):
