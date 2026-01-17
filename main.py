@@ -54,9 +54,11 @@ def run_effects():
     overlay.show()  #shows just the red fade.
     overlay.heartbeat()
     overlay.start_shake_cursor()
-    print("here")
+
     sys.exit(app.exec())
     time.sleep(5)
+    app.quit()
+    overlay.close()
 
 
 def teachersPet():
