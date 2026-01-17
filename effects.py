@@ -57,9 +57,17 @@ class HeartbeatOverlay(QtWidgets.QWidget):
 
         QtCore.QTimer.singleShot(240, self.do_lub)   # dub → next lub
 
+    def stop_heartbeat(self):
+        """Stops the lub-dub loop."""
+        self._heartbeat_running = False
+        # Optional: stop fade immediately
+        self.opacity = 30
+        self.update()
+        # Optional: stop cursor shake too
+        self._shake_cursor_running = False
 
     def fade_step(self):
-        if self.opacity > 40:
+        if self.opacity > 30:
             self.opacity -= 3
             self.update()
 
