@@ -13,7 +13,7 @@ def main():
     voice_lock = threading.Lock()
     voice_busy = False
 
-    warned_this_teacher = False  # <-- latch flag
+    is_same_teacher = False  # <-- latch flag
 
     try:
         while True:
@@ -41,18 +41,17 @@ def main():
             
             # teacher condition
             is_teacher = (cam.me_box is not None and stable_other)
-            print(cam.me_box, stable_other)
             # reset latch when teacher disappears
             if not is_teacher:
-                warned_this_teacher = False
+                is_same_teacher = False
 
-            if is_teacher and not warned_this_teacher:
+            if is_teacher and not is_same_teacher:
                 url, is_illegal = get_chrome_active_domain()
                 if is_illegal:
                     with voice_lock:
                         if not voice_busy:
                             voice_busy = True
-                            warned_this_teacher = True  
+                            is_same_teacher = True  
 
                             def runner(u=url):
                                 nonlocal voice_busy

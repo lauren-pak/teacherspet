@@ -1,0 +1,23 @@
+# TeachersPet
+
+TeachersPet is a computer-vision–based monitoring tool that detects background people
+and triggers visual/audio effects when a teacher is detected. 
+This alerts the currently used app if the user is doing irrelevant tasks.
+
+---
+
+## Requirements
+- macOS / Windows
+- Python 3.10 or newer
+- Built in camera
+
+---
+
+## (macOS only) Install Homebrew
+If you don’t have Homebrew installed:
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+## for installing python packages
+pip install .
