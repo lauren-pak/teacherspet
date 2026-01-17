@@ -121,6 +121,16 @@ class HeartbeatOverlay(QtWidgets.QWidget):
 
         painter.fillRect(self.rect(), gradient)
 
+    def fullscreen(self):
+        app = QtWidgets.QApplication([])
+
+        window = QtWidgets.QWidget()
+        window.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint)
+        window.showFullScreen()  # fullscreen
+
+
+
+
     
 
 
