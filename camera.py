@@ -136,7 +136,7 @@ class Camera:
         if best_match is not None and best_iou > self.me_iou_thresh:
             self.me_box = best_match
 
-    def _find_others(self, person_boxes):
+    def _find_others(self, person_boxes, min_closest_area=20000):
         """Return (other_people_list, closest_box, closest_conf, found_other)."""
         self.other_people = []
         closest_box = None
@@ -153,14 +153,15 @@ class Camera:
             self.other_people.append((x1, y1, x2, y2, conf))
 
             area = (x2 - x1) * (y2 - y1)
-            print(area)
-        if area > closest_area:
-            closest_area = area
-            closest_box = (x1, y1, x2, y2)
-            closest_conf = conf
+            # Only consider as "closest" if big enough
+            if area >= min_closest_area and area > closest_area:
+                closest_area = area
+                closest_box = (x1, y1, x2, y2)
+                closest_conf = conf
 
         found_other = len(self.other_people) > 0
         return self.other_people, closest_box, closest_conf, found_other
+
 
     def _draw(self, frame, other_people, closest_box, closest_conf):
         # Draw "me"
