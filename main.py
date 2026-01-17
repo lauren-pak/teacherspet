@@ -18,7 +18,7 @@ def main():
 
     #heart animation overlay
     video_overlay = VideoOverlay(
-    Path(__file__).parent / "graphics" / "heart_animation.mp4",
+    Path(__file__).parent / "images" / "heart_animation.mp4",
     size=(450, 450)
     )
     
