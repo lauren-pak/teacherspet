@@ -2,6 +2,7 @@
 import subprocess, platform
 from urllib.parse import urlparse
 
+# Returns string name of active domain, and whether its illegal (boolean)
 
 def get_chrome_active_domain():
     illegal_apps = ["snap", "instagram", "chatgpt", "tiktok", "youtube", "netflix", "discord", "twitter", "facebook"]
@@ -45,7 +46,7 @@ def get_chrome_active_domain():
                 illegal = True
         return title, illegal
 
-print(get_chrome_active_domain())
+#print(get_chrome_active_domain())
 
 
 

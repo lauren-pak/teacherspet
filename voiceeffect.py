@@ -7,6 +7,7 @@ illegal_apps = ["snap", "instagram", "chatgpt", "tiktok", "youtube", "netflix", 
 
 app_detected = "instagram"  # Example detected app
 
+#Plays a message direclty using random start, illegal app, and random end. Access with working_user.py
 def relaymessage(app_detected):
     
     message_start = ["Stop using", "Quit using", "Okay, enough", "Get off "]
