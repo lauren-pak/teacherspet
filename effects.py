@@ -12,7 +12,7 @@ class HeartbeatOverlay(QtWidgets.QWidget):
         super().__init__()
         self.setWindowFlags(
             QtCore.Qt.FramelessWindowHint |
-            QtCore.Qt.WindowStaysOnTopHint |
+            #QtCore.Qt.WindowStaysOnTopHint |
             QtCore.Qt.Tool
         )
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)

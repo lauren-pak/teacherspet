@@ -30,14 +30,17 @@ def relaymessage(app_detected):
             model_id="eleven_v3",
             output_format="mp3_44100_128"
         )
-
         # Play the audio
-        play(audio)
         audio_bytes = b"".join(audio)
         audio_segment = AudioSegment.from_file(io.BytesIO(audio_bytes), format="mp3")
-
-        return len(audio_segment)
+        duration_ms = int(len(audio_segment))
+        return audio_bytes, duration_ms
+        
 
 
     except Exception as e:
         print("ElevenLabs error:", e)
+
+
+# u = relaymessage("insta")
+# print(u)

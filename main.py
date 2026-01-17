@@ -10,7 +10,8 @@ from voiceeffect import relaymessage
 from working_user import get_chrome_active_domain
 from heart import VideoOverlay
 from pathlib import Path
-
+from elevenlabs.play import play
+import datetime
 
 def main():
     army = None
@@ -72,7 +73,7 @@ def main():
                     army = PopupImages("images/army1.png", "images/army2.png", 200)
 
                 if overlay is None:
-                    video_overlay.start()
+                    #video_overlay.start()
                     overlay = HeartbeatOverlay()
                     overlay.show()
                     overlay.start_heartbeat()
@@ -81,11 +82,21 @@ def main():
                 def runner(u=url):
                     nonlocal voice_busy
                     try:
-                        audiosamplelen = relaymessage(u)
-                        QtCore.QTimer.singleShot(0, army.start_animation)
-                        QtCore.QTimer.singleShot(
-                            audiosamplelen, army.stop_animation
-                        )
+                        audio_bytes, duration_ms = relaymessage(u)  # duration_ms must be int ms
+                        play(audio_bytes)
+                        # schedule UI actions on the Qt thread
+                        QtCore.QTimer.singleShot(0, lambda: (
+                            print(f"animation started at {datetime.now()}"),
+                            army.start_animation()
+                        ))
+
+                        QtCore.QTimer.singleShot(duration_ms, lambda: (
+                            print(f"animation stopped at {datetime.now()}"),
+                            army.stop_animation()
+                        ))
+
+                        # play audio (in this worker thread)
+                        
                     finally:
                         with voice_lock:
                             voice_busy = False
@@ -103,7 +114,7 @@ def main():
                 army = None
 
             if overlay:
-                video_overlay.stop()
+                #video_overlay.stop()
                 overlay.stop_heartbeat()
                 overlay.close()
                 overlay.deleteLater()

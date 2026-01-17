@@ -18,7 +18,7 @@ class PopupImages(QtWidgets.QWidget):
 
         # Scale images to 20% of screen width
         screen = QtWidgets.QApplication.primaryScreen().availableGeometry()
-        max_width = screen.width() * 0.2
+        max_width = screen.width() * 0.1
         self.pix1 = self.pix1.scaledToWidth(max_width, QtCore.Qt.SmoothTransformation)
         self.pix2 = self.pix2.scaledToWidth(max_width, QtCore.Qt.SmoothTransformation)
 

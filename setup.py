@@ -11,7 +11,7 @@ setup(
         "ultralytics",
         "collections",
         "pyautogui",
-
+        "pydub",
         "opencv-python"
 
 
