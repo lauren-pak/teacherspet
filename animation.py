@@ -40,40 +40,42 @@ class PopupImages(QtWidgets.QWidget):
         self.label1.move(margin, screen.height() - self.pix1.height() - margin)
         self.label2.move(margin, screen.height() - self.pix1.height() - margin)
 
-        self.running = False
+        self.running = True
+        self.latency = latency
 
         self.show()
         
         
 
-    def start_animation(self, latency, running):
-        if running:
+    def start_animation(self):
+        if self.running:
             # Step 1: Show label1
             self.label1.setVisible(True)
             self.label2.setVisible(False)
 
             # Step 2: After 500ms, hide label1, show label2
-            QtCore.QTimer.singleShot(latency, lambda: self.switch_images(latency, running=True))
+            QtCore.QTimer.singleShot(self.latency, lambda: self.switch_images())
 
-    def switch_images(self, latency, running):
-        if running:
+    def switch_images(self):
+        if self.running:
             self.label1.setVisible(False)
             self.label2.setVisible(True)
 
             # Step 3: After another 500ms, hide label2 and repeat
-            QtCore.QTimer.singleShot(latency, lambda: self.start_animation(latency, running=True))
+            QtCore.QTimer.singleShot(self.latency, lambda: self.start_animation())
 
-    def stop_animation(self, running=False):
-        if not running:
-            self.label1.setVisible(True)
-            self.label2.setVisible(False)
-            #self.close()
+    def stop_animation(self):
+        self.running = False
+        self.label1.setVisible(True)
+        self.label2.setVisible(False)
+        #self.close()
+    
 
         
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    popup = PopupImages("images/army1.png", "images/army2.png", 500)
-    popup.start_animation(500, running=True)
-    QtCore.QTimer.singleShot(10000, lambda: popup.stop_animation(running=False))
+    popup = PopupImages("images/army1.png", "images/army2.png", 200)
+    popup.start_animation()
+    QtCore.QTimer.singleShot(10000, lambda: (popup.stop_animation()))
     sys.exit(app.exec())
