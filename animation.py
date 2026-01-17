@@ -1,8 +1,8 @@
 from PySide6 import QtWidgets, QtCore, QtGui
-import sys, os
+import sys, os, time
 
 class PopupImages(QtWidgets.QWidget):
-    def __init__(self, img1_path, img2_path):
+    def __init__(self, img1_path, img2_path, latency=500):
         super().__init__()
 
         self.setWindowFlags(
@@ -26,7 +26,7 @@ class PopupImages(QtWidgets.QWidget):
         self.label1 = QtWidgets.QLabel(self)
         self.label1.setPixmap(self.pix1)
         self.label1.resize(self.pix1.size())
-        self.label1.setVisible(False)
+        self.label1.setVisible(True)
 
         self.label2 = QtWidgets.QLabel(self)
         self.label2.setPixmap(self.pix2)
@@ -36,35 +36,44 @@ class PopupImages(QtWidgets.QWidget):
         self.resize(screen.width(), screen.height())
 
         # Position images at bottom-left
-        margin = 20
+        margin = 10
         self.label1.move(margin, screen.height() - self.pix1.height() - margin)
-        self.label2.move(margin + self.pix1.width() + 10, screen.height() - self.pix2.height() - margin)
+        self.label2.move(margin, screen.height() - self.pix1.height() - margin)
+
+        self.running = False
 
         self.show()
-        self.start_animation()
+        
+        
 
-    def start_animation(self):
-        self.label1.setVisible(True)
-        anim1 = QtCore.QPropertyAnimation(self.label1, b"geometry")
-        anim1.setDuration(500)
-        anim1.setStartValue(QtCore.QRect(self.label1.x(), self.label1.y(), 0, 0))
-        anim1.setEndValue(self.label1.geometry())
-        anim1.setEasingCurve(QtCore.QEasingCurve.OutBounce)
+    def start_animation(self, latency, running):
+        if running:
+            # Step 1: Show label1
+            self.label1.setVisible(True)
+            self.label2.setVisible(False)
 
-        self.label2.setVisible(True)
-        anim2 = QtCore.QPropertyAnimation(self.label2, b"geometry")
-        anim2.setDuration(500)
-        anim2.setStartValue(QtCore.QRect(self.label2.x(), self.label2.y(), 0, 0))
-        anim2.setEndValue(self.label2.geometry())
-        anim2.setEasingCurve(QtCore.QEasingCurve.OutBounce)
+            # Step 2: After 500ms, hide label1, show label2
+            QtCore.QTimer.singleShot(latency, lambda: self.switch_images(latency, running=True))
 
-        # Keep reference to prevent garbage collection
-        self.anim_group = QtCore.QSequentialAnimationGroup()
-        self.anim_group.addAnimation(anim1)
-        self.anim_group.addAnimation(anim2)
-        self.anim_group.start()
+    def switch_images(self, latency, running):
+        if running:
+            self.label1.setVisible(False)
+            self.label2.setVisible(True)
+
+            # Step 3: After another 500ms, hide label2 and repeat
+            QtCore.QTimer.singleShot(latency, lambda: self.start_animation(latency, running=True))
+
+    def stop_animation(self, running=False):
+        if not running:
+            self.label1.setVisible(True)
+            self.label2.setVisible(False)
+            #self.close()
+
+        
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    popup = PopupImages("images/army1.png", "images/army2.png")
+    popup = PopupImages("images/army1.png", "images/army2.png", 500)
+    popup.start_animation(500, running=True)
+    QtCore.QTimer.singleShot(10000, lambda: popup.stop_animation(running=False))
     sys.exit(app.exec())
