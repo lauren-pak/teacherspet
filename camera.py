@@ -191,41 +191,4 @@ class Camera:
             cv.putText(frame, f"Locking onto YOU... {self.frame_count+1}/{self.lock_frames}", (20, 30),
                        cv.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
 
-    def run(self):
-        try:
-            while True:
-                ok, frame = self.cap.read()
-                if not ok:
-                    break
-
-                H, W = frame.shape[:2]
-                cx, cy = W / 2.0, H / 2.0
-
-                person_boxes = self._get_person_boxes(frame)
-
-                self._init_me(person_boxes, cx, cy)
-                self._update_me(person_boxes)
-
-                other_people, closest_box, closest_conf, found_other = self._find_others(person_boxes)
-
-                # Alert smoothing
-                self.other_hits.append(found_other)
-                if sum(self.other_hits) >= self.other_trigger:
-                    cv.putText(frame, "BACKGROUND PERSON DETECTED!", (20, 50),
-                               cv.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 0), 3)
-
-                self._draw(frame, other_people, closest_box, closest_conf)
-
-                cv.imshow("TeachersPet's vision", frame)
-                if cv.waitKey(1) & 0xFF == ord('q'):
-                    break
-
-                self.frame_count += 1
-
-        finally:
-            self.cap.release()
-            cv.destroyAllWindows()
-
-
-if __name__ == "__main__":
-    Camera().run()
+    

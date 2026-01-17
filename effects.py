@@ -66,14 +66,14 @@ class HeartbeatOverlay(QtWidgets.QWidget):
             except Exception as e:
                     print("macOS click-through failed:", e)
 
-    def heartbeat(self):
+    def heartbeat(self, time=16):
         # First beat (lub)
         self.opacity = self.max_opacity
         self.update()
         self.shake()
 
 
-        self.fade_timer.start(16) 
+        self.fade_timer.start(time) 
 
         QtCore.QTimer.singleShot(120, self.second_beat)
 
@@ -114,11 +114,4 @@ class HeartbeatOverlay(QtWidgets.QWidget):
 
     
 
-app = QtWidgets.QApplication(sys.argv)
-overlay = HeartbeatOverlay()
 
-overlay.show()  #shows just the red fade.
-overlay.heartbeat()
-overlay.start_shake_cursor()
-
-sys.exit(app.exec())
