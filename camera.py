@@ -1,3 +1,4 @@
+# Detects moving people & closest person => teacher!
 import cv2 as cv
 from ultralytics import YOLO
 from collections import deque
@@ -8,7 +9,6 @@ cap = cv.VideoCapture(0)
 if not cap.isOpened():
     raise SystemExit("Cannot open camera")
 
-# IoU (intersection over union) to match "me" across frames
 def detect_me(a, b):
     ax1, ay1, ax2, ay2 = a
     bx1, by1, bx2, by2 = b
@@ -128,9 +128,6 @@ while True:
         if me_box is not None and detect_me(me_box, box) > 0.25:
             continue
 
-        # only consider top region as "background"
-        if y1 > int(H * 0.65):
-            continue
 
         found_other = True
         other_people.append((x1, y1, x2, y2, conf))
@@ -173,7 +170,7 @@ while True:
         cv.putText(frame, f"Locking onto YOU... {frame_count+1}/{lock_frames}", (20, 30),
                    cv.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
 
-    cv.imshow("YOLO Camera", frame)
+    cv.imshow("TeachersPet's vision", frame)
     if cv.waitKey(1) & 0xFF == ord('q'):
         break
 
