@@ -2,6 +2,7 @@ from PySide6 import QtWidgets, QtCore, QtGui
 import sys, random, platform, threading
 import pyautogui
 import time
+import subprocess
 
 if platform.system() == "Windows":
     import win32gui
@@ -138,3 +139,25 @@ class HeartbeatOverlay(QtWidgets.QWidget):
         gradient.setColorAt(1.0, QtGui.QColor(139, 0, 0, self.opacity))
 
         painter.fillRect(self.rect(), gradient)
+
+    def run_overlay_process(duration=5):
+        """
+        Runs the overlay in THIS SAME FILE, but as a new process:
+        python3 teacherspet_onefile.py --overlay 5
+        """
+        subprocess.Popen([sys.executable, __file__, "--overlay", str(duration)])
+
+
+    def overlay_main(duration=5):
+        """
+        Overlay-only mode. Safe because it owns the Qt event loop and doesn't touch cv.imshow.
+        """
+        app = QtWidgets.QApplication(sys.argv)
+        overlay = HeartbeatOverlay()
+        overlay.show()
+        overlay.start_heartbeat()
+        overlay.start_shake_cursor(duration=duration)
+
+        QtCore.QTimer.singleShot(int(duration * 1000), overlay.stop_all)
+        QtCore.QTimer.singleShot(int(duration * 1000) + 50, app.quit)
+        sys.exit(app.exec())
