@@ -5,7 +5,7 @@ from urllib.parse import urlparse
 # Returns string name of active domain, and whether its illegal (boolean)
 
 def get_chrome_active_domain():
-    illegal_apps = ["snap", "instagram", "chatgpt", "tiktok", "youtube", "netflix", "discord", "twitter", "facebook"]
+    illegal_apps = ["snapchat", "instagram", "chatgpt", "tiktok", "youtube", "netflix", "discord", "twitter", "facebook"]
     illegal = False
     if platform.system() == "Darwin":
         script = '''
@@ -31,11 +31,14 @@ def get_chrome_active_domain():
     
         p = subprocess.run(["osascript", "-e", script], capture_output=True, text=True)
         if p==0: return "I am doing nothing, not even on task."
+        illegalapp = p.stdout.strip()
         for i in illegal_apps:
             if i in p.stdout.strip().lower():
                 illegal = True
+                illegalapp= i
 
-        return p.stdout.strip(), illegal
+
+        return illegalapp, illegal
     
     elif platform.system() == "Windows":
         import win32gui
@@ -46,7 +49,7 @@ def get_chrome_active_domain():
                 illegal = True
         return title, illegal
 
-#print(get_chrome_active_domain())
+print(get_chrome_active_domain())
 
 
 

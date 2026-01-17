@@ -3,9 +3,6 @@ from dotenv import load_dotenv
 from elevenlabs.client import ElevenLabs
 from elevenlabs.play import play
 import random
-illegal_apps = ["snap", "instagram", "chatgpt", "tiktok", "youtube", "netflix", "discord", "twitter", "facebook"]
-
-app_detected = "instagram"  # Example detected app
 
 #Plays a message direclty using random start, illegal app, and random end. Access with working_user.py
 def relaymessage(app_detected):
@@ -37,5 +34,3 @@ def relaymessage(app_detected):
 
     except Exception as e:
         print("ElevenLabs error:", e)
-
-relaymessage(app_detected)

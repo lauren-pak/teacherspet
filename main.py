@@ -7,18 +7,11 @@ import sys
 # import files
 from camera import Camera
 from effects import HeartbeatOverlay
-
-effects = HeartbeatOverlay()
+from voiceeffect import relaymessage
+from working_user import get_chrome_active_domain
 
 def main():
     cam = Camera()
-
-    INIT_SECONDS = 5
-    init_deadline = time.monotonic() + INIT_SECONDS
-
-    EFFECT_DURATION = 5
-    COOLDOWN_SECONDS = 3
-    next_allowed_effect_time = 0.0
 
     try:
         while True:
@@ -47,6 +40,12 @@ def main():
 
             # teacher condition
             is_teacher = (cam.me_box is not None and stable_other)
+            url, is_illegal = get_chrome_active_domain()
+
+            if is_teacher and is_voice and is_illegal:
+                is_voice = False
+                relaymessage(url)
+                
 
             if stable_other:
                 cv.putText(frame, "BACKGROUND PERSON DETECTED!", (20, 50),
@@ -54,11 +53,6 @@ def main():
 
             cam._draw(frame, other_people, closest_box, closest_conf)
             cv.imshow("TeachersPet's vision", frame)
-
-            now = time.monotonic()
-            if now >= init_deadline and is_teacher and now >= next_allowed_effect_time:
-                next_allowed_effect_time = now + COOLDOWN_SECONDS
-                effects.run_overlay_process(duration=EFFECT_DURATION)
 
             if cv.waitKey(1) & 0xFF == ord('q'):
                 break
@@ -71,8 +65,4 @@ def main():
 
 
 if __name__ == "__main__":
-    # overlay-mode (subprocess)
-    if len(sys.argv) >= 3 and sys.argv[1] == "--overlay":
-        effects.overlay_main(duration=int(sys.argv[2]))
-    else:
-        main()
+    main()
