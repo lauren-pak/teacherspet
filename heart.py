@@ -6,7 +6,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 
 
 class HeartOverlayWindow(QtWidgets.QWidget):
-    def __init__(self, mp4_path: str, duration: float = 5.0, fps_cap: float | None = None):
+    def __init__(self, mp4_path: str = "/graphics/heart_animation", duration: float = 5.0, fps_cap: float | None = None):
         super().__init__()
         self.mp4_path = mp4_path
         self.duration = duration
@@ -114,7 +114,9 @@ def run_heart_overlay(mp4_path: str, duration: float = 5.0):
 
 if __name__ == "__main__":
     if len(sys.argv) >= 3 and sys.argv[1] == "--overlay":
+        
         mp4 = sys.argv[2]
+        print(mp4)
         dur = float(sys.argv[3]) if len(sys.argv) >= 4 else 5.0
         run_heart_overlay(mp4, duration=dur)
     else:
