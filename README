@@ -24,6 +24,7 @@ If you don’t have Homebrew installed:
 ## (macOS only) Install opencv
 
 brew install opencv
+brew instal ffmpeg
 
 ---
 

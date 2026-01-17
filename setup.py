@@ -11,7 +11,11 @@ setup(
         "ultralytics",
         "collections",
         "pyautogui",
+
+        "opencv-python"
+
         "win32gui",
         "win32con"
+
     ],
 )

@@ -1,7 +1,8 @@
 import cv2 as cv
 import time
-import threading
-
+import threading, sys
+from effects import HeartbeatOverlay
+from PySide6 import QtWidgets, QtCore
 from camera import Camera
 from voiceeffect import relaymessage
 from working_user import get_chrome_active_domain
@@ -10,12 +11,17 @@ from working_user import get_chrome_active_domain
 def main():
     cam = Camera()
 
+    app = QtWidgets.QApplication(sys.argv)
+
+    
     voice_lock = threading.Lock()
     voice_busy = False
-
+    teacher_present = False
+    teacher_handled = False
     is_same_teacher = False  # <-- latch flag
 
     try:
+        teacher_voice = False
         while True:
             ok, frame = cam.cap.read()
             if not ok:
@@ -39,31 +45,52 @@ def main():
             cam.other_hits.append(1 if found_other else 0)
             stable_other = (sum(cam.other_hits) >= cam.other_trigger)
             
-            # teacher condition
-            is_teacher = (cam.me_box is not None and stable_other)
-            # reset latch when teacher disappears
-            if not is_teacher:
-                is_same_teacher = False
+    
+            is_teacher_now = (cam.me_box is not None and stable_other)
 
-            if is_teacher and not is_same_teacher:
+            # teacher enters frame
+            if is_teacher_now and not teacher_present:
+                teacher_present = True
+                teacher_handled = False   # reset latch on entry
+
+            # teacher leaves frame
+            elif not is_teacher_now and teacher_present:
+                teacher_present = False
+                teacher_handled = False  # optional, but clean
+
+
+            if teacher_present and not teacher_handled:
                 url, is_illegal = get_chrome_active_domain()
                 if is_illegal:
-                    with voice_lock:
-                        if not voice_busy:
-                            voice_busy = True
-                            is_same_teacher = True  
+                    overlay = HeartbeatOverlay()
+                    overlay.show()
+                    overlay.start_heartbeat()
+                    overlay.start_shake_cursor()
 
-                            def runner(u=url):
-                                nonlocal voice_busy
-                                try:
-                                    relaymessage(u) 
-                                except Exception as e:
-                                    print(f"[voice] relaymessage failed: {e}")
-                                finally:
-                                    with voice_lock:
-                                        voice_busy = False
+                    if(not teacher_handled):
+                        with voice_lock:
+                            if not voice_busy:
+                                voice_busy = True
+                                is_same_teacher = True  
 
-                            threading.Thread(target=runner, daemon=True).start()
+                                def runner(u=url):
+                                    nonlocal voice_busy
+                                    try:
+                                        relaymessage(u) 
+
+                                    except Exception as e:
+                                        print(f"[voice] relaymessage failed: {e}")
+                                    finally:
+                                        with voice_lock:
+                                            voice_busy = False
+
+                                threading.Thread(target=runner, daemon=True).start()
+                                teacher_handled = True
+                                teacher_voice = True
+            elif not teacher_present:
+                if teacher_voice:
+                    sys.exit(app.exec())  
+                    teacher_voice = False
 
             if stable_other:
                 cv.putText(frame, "BACKGROUND PERSON DETECTED!", (20, 50),

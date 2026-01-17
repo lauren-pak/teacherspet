@@ -97,9 +97,3 @@ class HeartbeatOverlay(QtWidgets.QWidget):
         painter.fillRect(self.rect(), gradient)
 
 # run overlay
-app = QtWidgets.QApplication(sys.argv)
-overlay = HeartbeatOverlay()
-overlay.show()
-overlay.start_heartbeat()
-overlay.start_shake_cursor()
-sys.exit(app.exec())
