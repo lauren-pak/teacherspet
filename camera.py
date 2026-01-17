@@ -153,10 +153,11 @@ class Camera:
             self.other_people.append((x1, y1, x2, y2, conf))
 
             area = (x2 - x1) * (y2 - y1)
-            if area > closest_area:
-                closest_area = area
-                closest_box = (x1, y1, x2, y2)
-                closest_conf = conf
+            print(area)
+        if area > closest_area:
+            closest_area = area
+            closest_box = (x1, y1, x2, y2)
+            closest_conf = conf
 
         found_other = len(self.other_people) > 0
         return self.other_people, closest_box, closest_conf, found_other
@@ -184,7 +185,7 @@ class Camera:
 
             x1, y1, x2, y2 = closest_box
             cv.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 6)
-            cv.putText(frame, f"CLOSEST {closest_conf:.2f}", (x1, y1 - 12),
+            cv.putText(frame, f"Teacher {closest_conf:.2f}", (x1, y1 - 12),
                        cv.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
 
         # Status text during locking
