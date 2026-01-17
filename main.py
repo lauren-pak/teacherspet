@@ -1,17 +1,19 @@
 import cv2 as cv
-from ultralytics import YOLO
-from collections import deque
 import time
-import sys
+import threading
 
-# import files
 from camera import Camera
-from effects import HeartbeatOverlay
 from voiceeffect import relaymessage
 from working_user import get_chrome_active_domain
 
+
 def main():
     cam = Camera()
+
+    voice_lock = threading.Lock()
+    voice_busy = False
+
+    warned_this_teacher = False  # <-- latch flag
 
     try:
         while True:
@@ -27,7 +29,6 @@ def main():
             cam._init_me(person_boxes, cx, cy)
             cam._update_me(person_boxes)
 
-            # min closest area = 3% of frame
             min_closest_area = int(0.03 * W * H)
 
             other_people, closest_box, closest_conf, found_other = cam._find_others(
@@ -35,17 +36,35 @@ def main():
             )
 
             # stability
-            cam.other_hits.append(found_other)
+            cam.other_hits.append(1 if found_other else 0)
             stable_other = (sum(cam.other_hits) >= cam.other_trigger)
-
+            
             # teacher condition
             is_teacher = (cam.me_box is not None and stable_other)
-            url, is_illegal = get_chrome_active_domain()
+            print(cam.me_box, stable_other)
+            # reset latch when teacher disappears
+            if not is_teacher:
+                warned_this_teacher = False
 
-            if is_teacher and is_voice and is_illegal:
-                is_voice = False
-                relaymessage(url)
-                
+            if is_teacher and not warned_this_teacher:
+                url, is_illegal = get_chrome_active_domain()
+                if is_illegal:
+                    with voice_lock:
+                        if not voice_busy:
+                            voice_busy = True
+                            warned_this_teacher = True  
+
+                            def runner(u=url):
+                                nonlocal voice_busy
+                                try:
+                                    relaymessage(u) 
+                                except Exception as e:
+                                    print(f"[voice] relaymessage failed: {e}")
+                                finally:
+                                    with voice_lock:
+                                        voice_busy = False
+
+                            threading.Thread(target=runner, daemon=True).start()
 
             if stable_other:
                 cv.putText(frame, "BACKGROUND PERSON DETECTED!", (20, 50),
