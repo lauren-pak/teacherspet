@@ -1,12 +1,11 @@
 Metadata-Version: 2.4
 Name: teacherspet
-Version: 0.1.0
-Requires-Dist: ElevenLabs
-Requires-Dist: dotenv
+Version: 1.0.0
+Requires-Dist: elevenlabs
+Requires-Dist: python-dotenv
 Requires-Dist: PySide6
 Requires-Dist: ultralytics
-Requires-Dist: collections
 Requires-Dist: pyautogui
-Requires-Dist: win32gui
-Requires-Dist: win32con
-Dynamic: requires-dist
+Requires-Dist: opencv-python
+Requires-Dist: win32con; platform_system == "Windows"
+Requires-Dist: win32gui; platform_system == "Windows"

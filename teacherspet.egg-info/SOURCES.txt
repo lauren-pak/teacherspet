@@ -1,4 +1,5 @@
 README
+pyproject.toml
 setup.py
 teacherspet.egg-info/PKG-INFO
 teacherspet.egg-info/SOURCES.txt
