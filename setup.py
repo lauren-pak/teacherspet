@@ -8,10 +8,10 @@ setup(
         "ElevenLabs",
         "dotenv",
         "PySide6",
-        "win32gui",
-        "win32con",
         "ultralytics",
         "collections",
-        "pyautogui"
+        "pyautogui",
+        "win32gui",
+        "win32con"
     ],
 )
