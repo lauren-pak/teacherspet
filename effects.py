@@ -1,6 +1,12 @@
 from PySide6 import QtWidgets, QtCore, QtGui
 import sys, random, threading, pyautogui, time
 
+import platform
+
+if platform.system() == "Darwin":
+    from AppKit import NSApp, NSFloatingWindowLevel
+
+
 class HeartbeatOverlay(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
@@ -34,6 +40,25 @@ class HeartbeatOverlay(QtWidgets.QWidget):
 
         # cursor shake
         self._shake_cursor_running = False
+
+        if platform.system() == "Darwin":
+            QtCore.QTimer.singleShot(
+                0, self._enable_macos_fullscreen_overlay
+            )
+
+    def _enable_macos_fullscreen_overlay(self):
+        from AppKit import NSWindow
+
+        ns_window = NSApp().windows()[0]
+
+        # Float above normal windows
+        ns_window.setLevel_(NSFloatingWindowLevel)
+
+        # Appear on all Spaces + fullscreen Spaces
+        ns_window.setCollectionBehavior_(
+            (1 << 0) |  # NSWindowCollectionBehaviorCanJoinAllSpaces
+            (1 << 7)    # NSWindowCollectionBehaviorFullScreenAuxiliary
+        )
 
     def start_heartbeat(self):
         self._heartbeat_running = True
@@ -105,3 +130,12 @@ class HeartbeatOverlay(QtWidgets.QWidget):
         painter.fillRect(self.rect(), gradient)
 
 # run overlay
+if __name__ == "__main__":
+    app = QtWidgets.QApplication(sys.argv)
+
+    overlay = HeartbeatOverlay()
+    overlay.show()
+    overlay.start_heartbeat()
+    overlay.start_shake_cursor()
+
+    sys.exit(app.exec())

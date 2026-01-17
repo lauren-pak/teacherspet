@@ -10,6 +10,7 @@ from working_user import get_chrome_active_domain
 from heart import VideoOverlay
 from pathlib import Path
 
+
 def main():
     cam = Camera()
     overlay = None
