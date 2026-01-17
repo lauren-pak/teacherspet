@@ -1,0 +1,7 @@
+README
+setup.py
+teacherspet.egg-info/PKG-INFO
+teacherspet.egg-info/SOURCES.txt
+teacherspet.egg-info/dependency_links.txt
+teacherspet.egg-info/requires.txt
+teacherspet.egg-info/top_level.txt

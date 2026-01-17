@@ -1,0 +1,13 @@
+Metadata-Version: 2.4
+Name: teacherspet
+Version: 0.1.0
+Requires-Dist: opencv-python
+Requires-Dist: ElevenLabs
+Requires-Dist: dotenv
+Requires-Dist: PySide6
+Requires-Dist: win32gui
+Requires-Dist: win32con
+Requires-Dist: ultralytics
+Requires-Dist: collections
+Requires-Dist: pyautogui
+Dynamic: requires-dist
