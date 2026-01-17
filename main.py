@@ -10,7 +10,7 @@ from working_user import get_chrome_active_domain
 
 def main():
     cam = Camera()
-
+    overlay = None
     app = QtWidgets.QApplication(sys.argv)
 
     
@@ -18,10 +18,8 @@ def main():
     voice_busy = False
     teacher_present = False
     teacher_handled = False
-    is_same_teacher = False  # <-- latch flag
 
     try:
-        teacher_voice = False
         while True:
             ok, frame = cam.cap.read()
             if not ok:
@@ -46,26 +44,41 @@ def main():
             stable_other = (sum(cam.other_hits) >= cam.other_trigger)
             
     
-            is_teacher_now = (cam.me_box is not None and stable_other)
+            is_teacher_now = (cam.me_box is not None and stable_other and closest_box is not None)
+    
 
             # teacher enters frame
             if is_teacher_now and not teacher_present:
                 teacher_present = True
                 teacher_handled = False   # reset latch on entry
+                print("teacher present)")
 
             # teacher leaves frame
             elif not is_teacher_now and teacher_present:
                 teacher_present = False
                 teacher_handled = False  # optional, but clean
+                print("teacher is gone")
 
 
             if teacher_present and not teacher_handled:
                 url, is_illegal = get_chrome_active_domain()
+                cv.putText(
+                    frame,
+                    f"Teacher present: {teacher_present}",
+                    (20, 90),
+                    cv.FONT_HERSHEY_SIMPLEX,
+                    0.8,
+                    (255, 255, 0),
+                    2
+                )
+
                 if is_illegal:
-                    overlay = HeartbeatOverlay()
-                    overlay.show()
-                    overlay.start_heartbeat()
-                    overlay.start_shake_cursor()
+                    if overlay is None:
+                        overlay = HeartbeatOverlay()
+                        overlay.show()
+                        overlay.start_heartbeat()
+                        overlay.start_shake_cursor()
+
 
                     if(not teacher_handled):
                         with voice_lock:
@@ -86,11 +99,16 @@ def main():
 
                                 threading.Thread(target=runner, daemon=True).start()
                                 teacher_handled = True
-                                teacher_voice = True
             elif not teacher_present:
-                if teacher_voice:
-                    sys.exit(app.exec())  
-                    teacher_voice = False
+                if overlay is not None:
+                    overlay.stop_heartbeat()
+                    overlay._shake_cursor_running = False
+                    overlay.close()
+                    overlay.deleteLater()
+                    overlay = None
+
+
+
 
             if stable_other:
                 cv.putText(frame, "BACKGROUND PERSON DETECTED!", (20, 50),
@@ -104,9 +122,14 @@ def main():
 
             cam.frame_count += 1
 
+
     finally:
         cam.cap.release()
         cv.destroyAllWindows()
+
+    app.quit()
+
+    
 
 
 if __name__ == "__main__":
