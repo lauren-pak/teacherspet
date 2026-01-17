@@ -3,7 +3,6 @@ from ultralytics import YOLO
 from collections import deque
 import time
 import sys
-from PySide6 import QtWidgets, QtCore
 
 # import files
 from camera import Camera
