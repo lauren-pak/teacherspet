@@ -55,11 +55,11 @@ class HeartbeatOverlay(QtWidgets.QWidget):
         self.opacity = self.max_opacity - 30
         self.update()
 
-        QtCore.QTimer.singleShot(240, self.do_lub)   # dub → next lub
+        QtCore.QTimer.singleShot(1000, self.do_lub)   # dub → next lub
 
 
     def fade_step(self):
-        if self.opacity > 40:
+        if self.opacity > 60:
             self.opacity -= 3
             self.update()
 
