@@ -3,16 +3,23 @@ import time
 import threading, sys
 from effects import HeartbeatOverlay
 from PySide6 import QtWidgets, QtCore
+import subprocess
 from camera import Camera
 from voiceeffect import relaymessage
 from working_user import get_chrome_active_domain
-import subprocess
+from heart import VideoOverlay
+from pathlib import Path
 
 def main():
     cam = Camera()
     overlay = None
     app = QtWidgets.QApplication(sys.argv)
 
+    #heart animation overlay
+    video_overlay = VideoOverlay(
+    Path(__file__).parent / "graphics" / "heart_animation.mp4",
+    size=(450, 450)
+    )
     
     voice_lock = threading.Lock()
     voice_busy = False
@@ -51,13 +58,11 @@ def main():
             if is_teacher_now and not teacher_present:
                 teacher_present = True
                 teacher_handled = False   # reset latch on entry
-                print("teacher present)")
 
             # teacher leaves frame
             elif not is_teacher_now and teacher_present:
                 teacher_present = False
                 teacher_handled = False  # optional, but clean
-                print("teacher is gone")
 
 
             if teacher_present and not teacher_handled:
@@ -73,20 +78,20 @@ def main():
                 )
 
                 if is_illegal:
-                    subprocess.run(["osascript", "-e", "set volume output volume 100"])
-
+                    # subprocess.run(["osascript", "-e", "set volume output volume 100"])
+                    print("here")
                     if overlay is None:
+                        video_overlay.start()
                         overlay = HeartbeatOverlay()
                         overlay.show()
                         overlay.start_heartbeat()
                         overlay.start_shake_cursor()
-
+                        
 
                     if(not teacher_handled):
                         with voice_lock:
                             if not voice_busy:
                                 voice_busy = True
-                                is_same_teacher = True  
 
                                 def runner(u=url):
                                     nonlocal voice_busy
@@ -103,11 +108,13 @@ def main():
                                 teacher_handled = True
             elif not teacher_present:
                 if overlay is not None:
+                    video_overlay.stop()
                     overlay.stop_heartbeat()
                     overlay._shake_cursor_running = False
                     overlay.close()
                     overlay.deleteLater()
                     overlay = None
+                    
 
 
 
