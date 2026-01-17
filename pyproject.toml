@@ -1,0 +1,14 @@
+[project]
+name = "teacherspet"
+version = "1.0.0"
+
+dependencies = [
+  "elevenlabs",
+  "python-dotenv",
+  "PySide6",
+  "ultralytics",
+  "pyautogui",
+  "opencv-python",
+  "win32con; platform_system == 'Windows'",
+  "win32gui; platform_system == 'Windows'"
+]

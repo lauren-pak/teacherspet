@@ -1,8 +1,10 @@
-ElevenLabs
-dotenv
+elevenlabs
+python-dotenv
 PySide6
 ultralytics
-collections
 pyautogui
-win32gui
+opencv-python
+
+[:platform_system == "Windows"]
 win32con
+win32gui

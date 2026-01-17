@@ -6,7 +6,7 @@ from PySide6 import QtWidgets, QtCore
 from camera import Camera
 from voiceeffect import relaymessage
 from working_user import get_chrome_active_domain
-
+import subprocess
 
 def main():
     cam = Camera()
@@ -73,6 +73,8 @@ def main():
                 )
 
                 if is_illegal:
+                    subprocess.run(["osascript", "-e", "set volume output volume 100"])
+
                     if overlay is None:
                         overlay = HeartbeatOverlay()
                         overlay.show()
