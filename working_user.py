@@ -27,7 +27,7 @@ def get_chrome_active_domain():
         # return host
     
         p = subprocess.run(["osascript", "-e", script], capture_output=True, text=True)
-        if p==0: return "nooo"
+        if p==0: return "I am doing nothing, not even on task."
         return p.stdout.strip()
     
     elif platform.system() == "Windows":
