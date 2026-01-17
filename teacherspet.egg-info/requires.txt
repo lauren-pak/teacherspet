@@ -1,4 +1,4 @@
-cv2
+opencv-python
 ElevenLabs
 dotenv
 PySide6
