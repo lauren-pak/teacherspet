@@ -71,9 +71,6 @@ def teachersPet():
                 break
 
             run_camera(frame)
-
-            while IsTeacher:
-                run_effects()
                 
             overlay.closeEvent()
             if cv.waitKey(1) & 0xFF == ord('q'):
