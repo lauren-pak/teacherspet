@@ -3,6 +3,8 @@ from dotenv import load_dotenv
 from elevenlabs.client import ElevenLabs
 from elevenlabs.play import play
 import random
+from pydub import AudioSegment
+import io
 
 #Plays a message direclty using random start, illegal app, and random end. Access with working_user.py
 def relaymessage(app_detected):
@@ -31,6 +33,11 @@ def relaymessage(app_detected):
 
         # Play the audio
         play(audio)
+        audio_bytes = b"".join(audio)
+        audio_segment = AudioSegment.from_file(io.BytesIO(audio_bytes), format="mp3")
+
+        return len(audio_segment)
+
 
     except Exception as e:
         print("ElevenLabs error:", e)
