@@ -47,20 +47,21 @@ def run_camera():
         cv.destroyAllWindows()
 
 def run_effects():
+    print("here")
     app = QtWidgets.QApplication(sys.argv)
     overlay = HeartbeatOverlay()
 
     overlay.show()  #shows just the red fade.
     overlay.heartbeat()
     overlay.start_shake_cursor()
-
+    print("here")
     sys.exit(app.exec())
     time.sleep(5)
-    overlay.stop_shake_cursor()
 
 
 def teachersPet():
     run_camera()
+
     #wait initialisation time
     time.sleep(10)
 

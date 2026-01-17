@@ -35,20 +35,29 @@ class HeartbeatOverlay(QtWidgets.QWidget):
         
     def showEvent(self, event):
         super().showEvent(event)
-    def start_shake_cursor(self, intensity=10, frequency=0.5):
+    def start_shake_cursor(self, duration=5, intensity=10, frequency=0.05):
         self._shake_cursor_running = True
+
+        def stop():
+            self._shake_cursor_running = False
+
         def run():
-            dx = 5
-            dy = 5
-            pyautogui.PAUSE = 0.05  # disables the automatic pause
+            dx = intensity
+            dy = intensity
+            pyautogui.PAUSE = 0  # disable built-in pause
 
             while self._shake_cursor_running:
                 x, y = pyautogui.position()
                 pyautogui.moveTo(x + dx, y + dy)
                 dx *= -1
                 dy *= -1
+                time.sleep(frequency)
 
+        # start shaking
         threading.Thread(target=run, daemon=True).start()
+
+        # schedule automatic stop
+        threading.Timer(duration, stop).start()
 
     def stop_shake_cursor(self):
         self._shake_cursor_running = False
