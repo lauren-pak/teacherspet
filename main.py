@@ -3,7 +3,7 @@ from ultralytics import YOLO
 from collections import deque
 import time
 import sys
-from PySide6 import QtWidgets
+from PySide6 import QtWidgets, QtCore
 
 # import files
 from camera import Camera
@@ -28,6 +28,9 @@ def run_camera():
 
             other_people, closest_box, closest_conf, found_other = cam._find_others(person_boxes)
 
+            if cam.me_box is not None and other_people:
+                print("working")
+
             # Alert smoothing
             cam.other_hits.append(found_other)
             if sum(cam.other_hits) >= cam.other_trigger:
@@ -46,27 +49,30 @@ def run_camera():
         cam.cap.release()
         cv.destroyAllWindows()
 
-def run_effects():
-    print("here")
-    app = QtWidgets.QApplication(sys.argv)
+def run_effects(duration=5):
+    app = QtWidgets.QApplication.instance()
+    created = False
+    if app is None:
+        app = QtWidgets.QApplication(sys.argv)
+        created = True
+
     overlay = HeartbeatOverlay()
+    overlay.show()
+    overlay.start_heartbeat()
+    overlay.start_shake_cursor(duration=duration)
 
-    overlay.show()  #shows just the red fade.
-    overlay.heartbeat()
-    overlay.start_shake_cursor()
+    # stop overlay after duration seconds
+    QtCore.QTimer.singleShot(duration * 1000, overlay.stop_all)
 
-    sys.exit(app.exec())
-    time.sleep(5)
-    app.quit()
-    overlay.close()
+    if created:
+        app.exec()
+
 
 
 def teachersPet():
     run_camera()
 
-    #wait initialisation time
-    time.sleep(10)
 
 
 
-run_effects()
+teachersPet()

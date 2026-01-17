@@ -27,6 +27,7 @@ class Camera:
         self.me_iou_thresh = me_iou_thresh
         self.smooth_alpha = smooth_alpha
         self.other_trigger = other_trigger
+        self.other_people = []
 
         # State
         self.me_box = None                  # (x1,y1,x2,y2)
@@ -137,7 +138,7 @@ class Camera:
 
     def _find_others(self, person_boxes):
         """Return (other_people_list, closest_box, closest_conf, found_other)."""
-        other_people = []
+        self.other_people = []
         closest_box = None
         closest_conf = 0.0
         closest_area = -1
@@ -149,7 +150,7 @@ class Camera:
             if self.me_box is not None and self.detect_me(self.me_box, box) > self.me_iou_thresh:
                 continue
 
-            other_people.append((x1, y1, x2, y2, conf))
+            self.other_people.append((x1, y1, x2, y2, conf))
 
             area = (x2 - x1) * (y2 - y1)
             if area > closest_area:
@@ -157,8 +158,8 @@ class Camera:
                 closest_box = (x1, y1, x2, y2)
                 closest_conf = conf
 
-        found_other = len(other_people) > 0
-        return other_people, closest_box, closest_conf, found_other
+        found_other = len(self.other_people) > 0
+        return self.other_people, closest_box, closest_conf, found_other
 
     def _draw(self, frame, other_people, closest_box, closest_conf):
         # Draw "me"
