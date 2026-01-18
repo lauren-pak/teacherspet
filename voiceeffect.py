@@ -9,8 +9,8 @@ import io
 #Plays a message direclty using random start, illegal app, and random end. Access with working_user.py
 def relaymessage(app_detected):
     
-    message_start = ["Stop using", "Quit using", "Okay, enough", "Get off "]
-    message_end = [", you bum!", ", get back to work!", ", lock in dawg!", ", the teacher is watching!"]
+    message_start = ["Excuse me teacher, I am using ", "Teacher your class is kind of boring, ", "I AM USING", "Shhh, don't tell anyone, I am secretly using "]
+    message_end = ["Hahahah", ", i'm so bored of your class!", " school is too easy!", ", YAY!"]
 
     # Load .env
     load_dotenv()
