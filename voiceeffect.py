@@ -34,7 +34,7 @@ def relaymessage(app_detected):
         audio_bytes = b"".join(audio)
         audio_segment = AudioSegment.from_file(io.BytesIO(audio_bytes), format="mp3")
         duration_ms = int(len(audio_segment))
-        return audio_bytes, duration_ms
+        return audio_bytes, audio_segment
         
 
 
