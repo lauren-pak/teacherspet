@@ -47,6 +47,15 @@ class PopupImages(QtWidgets.QWidget):
 
         self.show()
 
+        self.setWindowOpacity(0.0)
+
+        # Fade-in animation
+        self.fade_anim = QtCore.QPropertyAnimation(self, b"windowOpacity")
+        self.fade_anim.setDuration(2000)          # ms
+        self.fade_anim.setStartValue(0.0)
+        self.fade_anim.setEndValue(1.0)
+        self.fade_anim.setEasingCurve(QtCore.QEasingCurve.OutCubic)
+
     def set_speed(self, speed):
         self.speed = max(10, int(speed))
         if self.timer.isActive():
@@ -58,6 +67,11 @@ class PopupImages(QtWidgets.QWidget):
         self.running = True
         self._show_first = True
         self.label.setPixmap(self.pix1)
+
+        self.fade_anim.stop()
+        self.setWindowOpacity(0.0)
+        self.fade_anim.start()
+        
         self.timer.start(self.speed)
 
     def _tick(self):
