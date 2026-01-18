@@ -7,7 +7,7 @@ if platform.system() == "Darwin":
 
 
 class HeartbeatOverlay(QtWidgets.QWidget):
-    def __init__(self, speed=70, color=139, opacity=60):
+    def __init__(self, speed=70, color=139, opacity=60, mp3_path=None, volume=0.8):
         super().__init__()
 
         self.setWindowFlags(
@@ -16,19 +16,19 @@ class HeartbeatOverlay(QtWidgets.QWidget):
             QtCore.Qt.Tool
         )
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground, True)
+
         screen = QtWidgets.QApplication.primaryScreen().geometry()
 
-        self.speed = int(speed)   # ms between lub and dub
+        self.speed = int(speed)
         self.color = int(color)
 
         expand = 50
-        x = screen.x() - expand
-        y = screen.y() - expand
-        width = screen.width() + 2 * expand
-        height = screen.height() + 2 * expand
-        self.setGeometry(x, y, width, height)
-
-        self.base_pos = self.pos()
+        self.setGeometry(
+            screen.x() - expand,
+            screen.y() - expand,
+            screen.width() + 2 * expand,
+            screen.height() + 2 * expand
+        )
 
         # heartbeat variables
         self.opacity = int(opacity)
@@ -39,16 +39,20 @@ class HeartbeatOverlay(QtWidgets.QWidget):
         self.fade_timer.timeout.connect(self.fade_step)
         self.fade_timer.start(16)
 
-        # cursor shake
         self._shake_cursor_running = False
+
+        self.player = None
+        self.audio_out = None
+
+        # Optional MP3
+        if mp3_path:
+            self._init_mp3(mp3_path, volume)
 
         if platform.system() == "Darwin":
             QtCore.QTimer.singleShot(0, self._enable_macos_fullscreen_overlay)
 
     def _init_mp3(self, mp3_path, volume):
         p = Path(mp3_path)
-
-        # Make relative paths work regardless of working directory
         if not p.is_absolute():
             p = Path(__file__).parent / p
 
@@ -56,9 +60,17 @@ class HeartbeatOverlay(QtWidgets.QWidget):
             print(f"[HeartbeatOverlay] MP3 not found: {p}")
             return
 
+        self.audio_out = QtMultimedia.QAudioOutput(self)
+        self.audio_out.setVolume(float(volume))
+
+        self.player = QtMultimedia.QMediaPlayer(self)
+        self.player.setAudioOutput(self.audio_out)
+        self.player.setSource(QtCore.QUrl.fromLocalFile(str(p.resolve())))
+
+        print(f"[HeartbeatOverlay] Loaded MP3: {p.resolve()}")
 
     def set_speed(self, speed):
-        self.speed = max(50, int(speed))  # clamp so it never breaks
+        self.speed = max(50, int(speed))
 
     def _enable_macos_fullscreen_overlay(self):
         try:
@@ -68,11 +80,12 @@ class HeartbeatOverlay(QtWidgets.QWidget):
 
         ns_window.setLevel_(NSFloatingWindowLevel)
         ns_window.setCollectionBehavior_(
-            (1 << 0) |  # CanJoinAllSpaces
-            (1 << 7)    # FullScreenAuxiliary
+            (1 << 0) | (1 << 7)
         )
 
     def start_heartbeat(self):
+        if self._heartbeat_running:
+            return
         self._heartbeat_running = True
         self.do_lub()
 
@@ -80,9 +93,13 @@ class HeartbeatOverlay(QtWidgets.QWidget):
         if not self._heartbeat_running:
             return
 
+        # play sound on lub if available
+        if self.player is not None:
+            self.player.stop()
+            self.player.play()
+
         self.opacity = self.max_opacity
         self.update()
-
         QtCore.QTimer.singleShot(self.speed, self.do_dub)
 
     def do_dub(self):
@@ -91,7 +108,6 @@ class HeartbeatOverlay(QtWidgets.QWidget):
 
         self.opacity = self.max_opacity - 30
         self.update()
-
         QtCore.QTimer.singleShot(self.speed, self.do_lub)
 
     def stop_heartbeat(self):
@@ -109,6 +125,8 @@ class HeartbeatOverlay(QtWidgets.QWidget):
             self.update()
 
     def start_shake_cursor(self, intensity=10, frequency=0.05):
+        if self._shake_cursor_running:
+            return
         self._shake_cursor_running = True
 
         def run():
@@ -139,7 +157,8 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
 
     overlay = HeartbeatOverlay(
-        speed=120, 
+        speed=120,
+        mp3_path="sounds/heartbeat.mp3"  # optional; remove if you don't want sound
     )
     overlay.show()
     overlay.start_heartbeat()

@@ -158,7 +158,7 @@ def main():
                 
 
         cam._draw(frame, other_people, closest_box, closest_conf)
-        cv.imshow("TeachersPet's vision", frame)
+        # cv.imshow("TeachersPet's vision", frame)
 
         if cv.waitKey(1) & 0xFF == ord('q'):
             app.quit()
