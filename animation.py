@@ -10,71 +10,70 @@ class PopupImages(QtWidgets.QWidget):
             QtCore.Qt.WindowStaysOnTopHint |
             QtCore.Qt.Tool
         )
-        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground, True)
+
+        # Store speed (ms)
+        self.speed = max(10, int(speed))
 
         # Load images
         self.pix1 = QtGui.QPixmap(img1_path)
         self.pix2 = QtGui.QPixmap(img2_path)
+        if self.pix1.isNull() or self.pix2.isNull():
+            raise FileNotFoundError(f"Could not load images: {img1_path}, {img2_path}")
 
-        # Scale images to 20% of screen width
+        # Scale images
         screen = QtWidgets.QApplication.primaryScreen().availableGeometry()
-        max_width = screen.width() * 0.35
+        max_width = int(screen.width() * 0.35)
         self.pix1 = self.pix1.scaledToWidth(max_width, QtCore.Qt.SmoothTransformation)
         self.pix2 = self.pix2.scaledToWidth(max_width, QtCore.Qt.SmoothTransformation)
 
-        # Labels
-        self.label1 = QtWidgets.QLabel(self)
-        self.label1.setPixmap(self.pix1)
-        self.label1.resize(self.pix1.size())
-        self.label1.setVisible(True)
-
-        self.label2 = QtWidgets.QLabel(self)
-        self.label2.setPixmap(self.pix2)
-        self.label2.resize(self.pix2.size())
-        self.label2.setVisible(False)
+        # One label is enough (swap pixmap)
+        self.label = QtWidgets.QLabel(self)
+        self.label.setPixmap(self.pix1)
+        self.label.resize(self.pix1.size())
 
         self.resize(screen.width(), screen.height())
 
         # Center position
         x = (screen.width() - self.pix1.width()) // 2
         y = (screen.height() - self.pix1.height()) // 2
+        self.label.move(x, y)
 
-        self.label1.move(x, y)
-        self.label2.move(x, y)
+        self._show_first = True
+        self.running = False
+
+        self.timer = QtCore.QTimer(self)
+        self.timer.timeout.connect(self._tick)
 
         self.show()
-        
-        
+
+    def set_speed(self, speed):
+        self.speed = max(10, int(speed))
+        if self.timer.isActive():
+            self.timer.start(self.speed)
 
     def start_animation(self):
         if self.running:
-            # Step 1: Show label1
-            self.label1.setVisible(True)
-            self.label2.setVisible(False)
+            return
+        self.running = True
+        self._show_first = True
+        self.label.setPixmap(self.pix1)
+        self.timer.start(self.speed)
 
-            # Step 2: After 500ms, hide label1, show label2
-            QtCore.QTimer.singleShot(self.latency, lambda: self.switch_images())
-
-    def switch_images(self):
-        if self.running:
-            self.label1.setVisible(False)
-            self.label2.setVisible(True)
-
-            # Step 3: After another 500ms, hide label2 and repeat
-            QtCore.QTimer.singleShot(self.latency, lambda: self.start_animation())
+    def _tick(self):
+        if not self.running:
+            return
+        self._show_first = not self._show_first
+        self.label.setPixmap(self.pix1 if self._show_first else self.pix2)
 
     def stop_animation(self):
         self.running = False
-        self.label1.setVisible(True)
-        self.label2.setVisible(False)
-        #self.close()
-    
-
-        
+        self.timer.stop()
+        self.label.setPixmap(self.pix1)
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    popup = PopupImages("images/army1.png", "images/army2.png")
+    popup = PopupImages("images/army1.png", "images/army2.png", speed=100)
     popup.start_animation()
-    QtCore.QTimer.singleShot(10000, lambda: (popup.stop_animation()))
+    QtCore.QTimer.singleShot(10000, popup.stop_animation)
     sys.exit(app.exec())

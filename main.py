@@ -106,7 +106,7 @@ def main():
                     alarm_player.play()
 
                 if army is None:
-                    army = PopupImages("images/army1.png", "images/army2.png", 200)
+                    army = PopupImages("images/army2.png", "images/army1.png", 150)
                     army.raise_()
 
                 if overlay and teacher_enter_time is not None:
@@ -124,26 +124,25 @@ def main():
                             return
 
                         audio_bytes, duration_ms = result
-                        if not audio_bytes:
-                            print("[audio] empty audio. Skipping.")
-                            return
+                        def start_anim():
+                            if army:
+                                print(f"animation started at {datetime.now()}")
+                                print("start anim")
+                                army.start_animation()
 
-                        # start animation on Qt thread
-                        QtCore.QTimer.singleShot(
-                            0, app,
-                            lambda: (print(f"animation started at {datetime.now()}"),
-                                     army.start_animation() if army else None)
-                        )
+                        QtCore.QTimer.singleShot(0, app, start_anim)
 
-                        # play audio (blocking)
+                        # 2) Play audio (blocks until finished)
                         play(audio_bytes)
 
-                        # stop animation on Qt thread
-                        QtCore.QTimer.singleShot(
-                            0, app,
-                            lambda: (print(f"animation stopped at {datetime.now()}"),
-                                     army.stop_animation() if army else None)
-                        )
+                        # 3) Stop animation on Qt thread (immediately after playback ends)
+                        def stop_anim():
+                            if army:
+                                print(f"animation stopped at {datetime.now()}")
+                                print("stop anim")
+                                army.stop_animation()
+
+                        QtCore.QTimer.singleShot(0, app, stop_anim)
 
                     finally:
                         with voice_lock:
