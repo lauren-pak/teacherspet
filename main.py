@@ -3,7 +3,7 @@ import time
 import threading, sys
 from effects import HeartbeatOverlay
 from animation import PopupImages
-from PySide6 import QtWidgets, QtCore
+from PySide6 import QtWidgets, QtCore, QtMultimedia
 from camera import Camera
 from voiceeffect import relaymessage
 from working_user import get_chrome_active_domain
@@ -25,6 +25,18 @@ def main():
     cam = Camera()
     app = QtWidgets.QApplication(sys.argv)
 
+    alarm_path = Path(__file__).parent / "sounds" / "siren.mp3"  # or .wav
+
+    alarm_audio_out = QtMultimedia.QAudioOutput()
+    alarm_audio_out.setVolume(0.5)
+
+    alarm_player = QtMultimedia.QMediaPlayer()
+    alarm_player.setAudioOutput(alarm_audio_out)
+    alarm_player.setSource(QtCore.QUrl.fromLocalFile(str(alarm_path.resolve())))
+
+    alarm_playing = False
+
+
     video_overlay = VideoOverlay(
         Path(__file__).parent / "images" / "heart_animation.mp4",
         size=(450, 450)
@@ -34,7 +46,7 @@ def main():
     voice_busy = False
     teacher_present = False
     teacher_handled = False
-    teacher_enter_time = None  # ✅ persists
+    teacher_enter_time = None  
 
     def process_frame():
         nonlocal army, overlay, voice_busy, teacher_present, teacher_handled, teacher_enter_time
@@ -91,6 +103,8 @@ def main():
                     # Also ensure fade / heartbeat timers are running
                     overlay.start_heartbeat()
                     overlay.start_shake_cursor()
+                    alarm_player.play()
+
                 if army is None:
                     army = PopupImages("images/army1.png", "images/army2.png", 200)
                     army.raise_()
@@ -150,8 +164,10 @@ def main():
             if overlay:
                 overlay.stop_heartbeat()
                 overlay.close()
+                alarm_player.stop()
                 overlay.deleteLater()
                 overlay = None
+                
 
         cam._draw(frame, other_people, closest_box, closest_conf)
         #cv.imshow("TeachersPet's vision", frame)
