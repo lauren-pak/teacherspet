@@ -50,8 +50,6 @@ class VideoOverlay(QtWidgets.QWidget):
         # Start hidden
         self.hide()
 
-    # -------------------- PUBLIC API --------------------
-
     def start(self):
         """Show overlay and start (or resume) video."""
         self.show()
@@ -66,7 +64,6 @@ class VideoOverlay(QtWidgets.QWidget):
     def is_running(self) -> bool:
         return self.isVisible()
 
-    # -------------------- INTERNAL --------------------
 
     def _center_on_current_screen(self):
         screen = QtGui.QGuiApplication.screenAt(QtGui.QCursor.pos())

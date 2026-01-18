@@ -9,8 +9,8 @@ import io
 #Plays a message direclty using random start, illegal app, and random end. Access with working_user.py
 def relaymessage(app_detected):
     
-    message_start = ["Excuse me teacher, I am using ", "Teacher your class is kind of boring, ", "I AM USING", "Shhh, don't tell anyone, I am secretly using "]
-    message_end = ["Hahahah", ", i'm so bored of your class!", " school is too easy!", ", YAY!"]
+    message_start = ["Excuse me teacher, I am using ", "Teacher your class is kind of boring, all i'm doing is using ", "I AM USING", "Pssttt dont tell people I'm on ", "Shhh, don't tell anyone, I am secretly using "]
+    message_end = ["Hahahah", ", i'm so bored of the class!", " school is too easy!", ", YAY!"]
 
     # Load .env
     load_dotenv()
@@ -41,6 +41,3 @@ def relaymessage(app_detected):
     except Exception as e:
         print("ElevenLabs error:", e)
 
-
-# u = relaymessage("insta")
-# print(u)

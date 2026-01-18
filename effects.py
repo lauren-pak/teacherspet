@@ -5,10 +5,9 @@ from pathlib import Path
 if platform.system() == "Darwin":
     from AppKit import NSApp, NSFloatingWindowLevel
 
- # clamp so it never breaks
 
 class HeartbeatOverlay(QtWidgets.QWidget):
-    def __init__(self, speed=70, color=139, opacity=60, mp3_path=None, volume=0.6):
+    def __init__(self, speed=70, color=139, opacity=60):
         super().__init__()
 
         self.setWindowFlags(
@@ -43,13 +42,6 @@ class HeartbeatOverlay(QtWidgets.QWidget):
         # cursor shake
         self._shake_cursor_running = False
 
-        # ---- MP3 player (Qt) ----
-        self.player = None
-        self.audio_out = None
-        self.sound_enabled = False
-        if mp3_path:
-            self._init_mp3(mp3_path, volume)
-
         if platform.system() == "Darwin":
             QtCore.QTimer.singleShot(0, self._enable_macos_fullscreen_overlay)
 
@@ -64,15 +56,6 @@ class HeartbeatOverlay(QtWidgets.QWidget):
             print(f"[HeartbeatOverlay] MP3 not found: {p}")
             return
 
-        self.audio_out = QtMultimedia.QAudioOutput(self)
-        self.audio_out.setVolume(float(volume))  # 0.0 - 1.0
-
-        self.player = QtMultimedia.QMediaPlayer(self)
-        self.player.setAudioOutput(self.audio_out)
-        self.player.setSource(QtCore.QUrl.fromLocalFile(str(p.resolve())))
-
-        self.sound_enabled = True
-        print(f"[HeartbeatOverlay] Loaded MP3: {p.resolve()}")
 
     def set_speed(self, speed):
         self.speed = max(50, int(speed))  # clamp so it never breaks
@@ -96,11 +79,6 @@ class HeartbeatOverlay(QtWidgets.QWidget):
     def do_lub(self):
         if not self._heartbeat_running:
             return
-
-        # Play MP3 once per cycle (at lub)
-        if self.sound_enabled and self.player is not None:
-            self.player.stop()   # restart cleanly each beat
-            self.player.play()
 
         self.opacity = self.max_opacity
         self.update()
@@ -161,9 +139,7 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
 
     overlay = HeartbeatOverlay(
-        speed=120,
-        mp3_path="sounds/heartbeat.mp3",   # <-- put your mp3 here
-        volume=0.8
+        speed=120, 
     )
     overlay.show()
     overlay.start_heartbeat()

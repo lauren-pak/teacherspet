@@ -29,7 +29,6 @@ class Camera:
         self.other_trigger = other_trigger
         self.other_people = []
 
-        # State
         self.me_box = None                  # (x1,y1,x2,y2)
         self.me_candidates = []             # list of (x1,y1,x2,y2)
         self.frame_count = 0

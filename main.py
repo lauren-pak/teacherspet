@@ -7,14 +7,13 @@ from PySide6 import QtWidgets, QtCore, QtMultimedia
 from camera import Camera
 from voiceeffect import relaymessage
 from working_user import get_chrome_active_domain
-from heart import VideoOverlay
 from pathlib import Path
 from elevenlabs.play import play
 from datetime import datetime
 
 def speed_from_seconds(t):
-    start = 500   # slow (ms)
-    end   = 80    # fast (ms) - safer than 50
+    start = 500   
+    end   = 80    
     k = min(1.0, t / 15.0)
     return int(start + (end - start) * k)
 
@@ -25,7 +24,7 @@ def main():
     cam = Camera()
     app = QtWidgets.QApplication(sys.argv)
 
-    alarm_path = Path(__file__).parent / "sounds" / "siren.mp3"  # or .wav
+    alarm_path = Path(__file__).parent / "sounds" / "siren.mp3"  
 
     alarm_audio_out = QtMultimedia.QAudioOutput()
     alarm_audio_out.setVolume(0.5)
@@ -33,14 +32,6 @@ def main():
     alarm_player = QtMultimedia.QMediaPlayer()
     alarm_player.setAudioOutput(alarm_audio_out)
     alarm_player.setSource(QtCore.QUrl.fromLocalFile(str(alarm_path.resolve())))
-
-    alarm_playing = False
-
-
-    video_overlay = VideoOverlay(
-        Path(__file__).parent / "images" / "heart_animation.mp4",
-        size=(450, 450)
-    )
 
     voice_lock = threading.Lock()
     voice_busy = False
@@ -88,28 +79,25 @@ def main():
         if teacher_present and not teacher_handled:
             url, is_illegal = get_chrome_active_domain()
 
-            if is_illegal:
-                
+            if is_illegal: # if chrome tab is in the illegal list
 
-
-                if overlay is None:
+                if overlay is None: # no current visual overlays
                     overlay = HeartbeatOverlay()
                     overlay.show()
 
                     overlay.raise_()  # bring overlay to front
-                    overlay.activateWindow()  # give it focus (helps on macOS)
-                    overlay.setAttribute(QtCore.Qt.WA_AlwaysStackOnTop)  # optional
+                    overlay.activateWindow() 
+                    overlay.setAttribute(QtCore.Qt.WA_AlwaysStackOnTop) 
 
-                    # Also ensure fade / heartbeat timers are running
                     overlay.start_heartbeat()
                     overlay.start_shake_cursor()
                     alarm_player.play()
 
-                if army is None:
-                    army = PopupImages("images/army2.png", "images/army1.png", 150)
+                if army is None: # check if quacker is in the scene
+                    army = PopupImages("images/army2.png", "images/army1.png", 100)
                     army.raise_()
 
-                if overlay and teacher_enter_time is not None:
+                if overlay and teacher_enter_time is not None: 
                     elapsed = now - teacher_enter_time
                     overlay.set_speed(speed_from_seconds(elapsed))
 
@@ -124,6 +112,8 @@ def main():
                             return
 
                         audio_bytes, duration_ms = result
+
+                        # start anim with the tts
                         def start_anim():
                             if army:
                                 print(f"animation started at {datetime.now()}")
@@ -132,10 +122,9 @@ def main():
 
                         QtCore.QTimer.singleShot(0, app, start_anim)
 
-                        # 2) Play audio (blocks until finished)
                         play(audio_bytes)
 
-                        # 3) Stop animation on Qt thread (immediately after playback ends)
+                        #Stop animation on Qt thread (immediately after playback ends)
                         def stop_anim():
                             if army:
                                 print(f"animation stopped at {datetime.now()}")
@@ -169,7 +158,7 @@ def main():
                 
 
         cam._draw(frame, other_people, closest_box, closest_conf)
-        #cv.imshow("TeachersPet's vision", frame)
+        cv.imshow("TeachersPet's vision", frame)
 
         if cv.waitKey(1) & 0xFF == ord('q'):
             app.quit()
