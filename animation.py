@@ -18,7 +18,7 @@ class PopupImages(QtWidgets.QWidget):
 
         # Scale images to 20% of screen width
         screen = QtWidgets.QApplication.primaryScreen().availableGeometry()
-        max_width = screen.width() * 0.1
+        max_width = screen.width() * 0.35
         self.pix1 = self.pix1.scaledToWidth(max_width, QtCore.Qt.SmoothTransformation)
         self.pix2 = self.pix2.scaledToWidth(max_width, QtCore.Qt.SmoothTransformation)
 
@@ -35,13 +35,12 @@ class PopupImages(QtWidgets.QWidget):
 
         self.resize(screen.width(), screen.height())
 
-        # Position images at bottom-left
-        margin = 10
-        self.label1.move(margin, screen.height() - self.pix1.height() - margin)
-        self.label2.move(margin, screen.height() - self.pix1.height() - margin)
+        # Center position
+        x = (screen.width() - self.pix1.width()) // 2
+        y = (screen.height() - self.pix1.height()) // 2
 
-        self.running = True
-        self.latency = speed
+        self.label1.move(x, y)
+        self.label2.move(x, y)
 
         self.show()
         
