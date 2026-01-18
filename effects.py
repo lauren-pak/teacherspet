@@ -8,7 +8,7 @@ if platform.system() == "Darwin":
 
 
 class HeartbeatOverlay(QtWidgets.QWidget):
-    def __init__(self):
+    def __init__(self, color=139, opacity =40):
         super().__init__()
         self.setWindowFlags(
             QtCore.Qt.FramelessWindowHint |
@@ -17,6 +17,9 @@ class HeartbeatOverlay(QtWidgets.QWidget):
         )
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         screen = QtWidgets.QApplication.primaryScreen().geometry()
+
+        self.speed = 500
+        self.color = int(color)
 
         expand = 50
         x = screen.x() - expand
@@ -29,7 +32,7 @@ class HeartbeatOverlay(QtWidgets.QWidget):
         self.base_pos = self.pos()
 
         # heartbeat variables
-        self.opacity = 40
+        self.opacity = int(opacity)
         self.max_opacity = 170
         self.beat_phase = "fade"
         self._heartbeat_running = False
@@ -45,6 +48,9 @@ class HeartbeatOverlay(QtWidgets.QWidget):
             QtCore.QTimer.singleShot(
                 0, self._enable_macos_fullscreen_overlay
             )
+    def set_speed(self, speed):
+        self.speed = min(50, int(speed))  # clamp so it never breaks
+
 
     def _enable_macos_fullscreen_overlay(self):
         from AppKit import NSWindow
@@ -71,7 +77,7 @@ class HeartbeatOverlay(QtWidgets.QWidget):
         self.opacity = self.max_opacity
         self.update()
 
-        QtCore.QTimer.singleShot(120, self.do_dub)   # lub → dub
+        QtCore.QTimer.singleShot(self.speed, self.do_dub)   # lub → dub
 
     def do_dub(self):
         if not self._heartbeat_running:
@@ -80,7 +86,7 @@ class HeartbeatOverlay(QtWidgets.QWidget):
         self.opacity = self.max_opacity - 30
         self.update()
 
-        QtCore.QTimer.singleShot(240, self.do_lub)   # dub → next lub
+        QtCore.QTimer.singleShot(self.speed, self.do_lub)   # dub → next lub
 
     def stop_heartbeat(self):
         """Stops the lub-dub loop."""
@@ -126,7 +132,7 @@ class HeartbeatOverlay(QtWidgets.QWidget):
             max(self.width(), self.height()) // 2
         )
         gradient.setColorAt(0.6, QtGui.QColor(0, 0, 0, 0))
-        gradient.setColorAt(1.0, QtGui.QColor(139, 0, 0, self.opacity))
+        gradient.setColorAt(1.0, QtGui.QColor(self.color, 0, 0, self.opacity))
         painter.fillRect(self.rect(), gradient)
 
 # run overlay

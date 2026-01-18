@@ -12,6 +12,11 @@ from heart import VideoOverlay
 from pathlib import Path
 from elevenlabs.play import play
 import datetime
+def speed_from_seconds(t):
+    start = 500   # slow (ms)
+    end   = 50   # fast (ms)
+    k = min(1.0, t / 15.0)
+    return int(start + (end - start) * k)
 
 def main():
     army = None
@@ -32,6 +37,7 @@ def main():
 
     def process_frame():
         nonlocal army, overlay, voice_busy, teacher_present, teacher_handled
+        teacher_enter_time = 0
 
         ok, frame = cam.cap.read()
         if not ok:
@@ -72,12 +78,19 @@ def main():
                 if army is None:
                     army = PopupImages("images/army1.png", "images/army2.png", 200)
 
+                
                 if overlay is None:
                     #video_overlay.start()
                     overlay = HeartbeatOverlay()
                     overlay.show()
                     overlay.start_heartbeat()
                     overlay.start_shake_cursor()
+                elif overlay:
+                    elapsed = time.monotonic() - teacher_enter_time
+                    teacher_enter_time += 20
+                    speed_ms = speed_from_seconds(elapsed)
+                    print(speed_ms)
+                    overlay.set_speed(speed_ms)
 
                 def runner(u=url):
                     nonlocal voice_busy
