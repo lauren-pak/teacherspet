@@ -4,17 +4,17 @@ import threading, sys
 from effects import HeartbeatOverlay
 from animation import PopupImages
 from PySide6 import QtWidgets, QtCore
-import subprocess
 from camera import Camera
 from voiceeffect import relaymessage
 from working_user import get_chrome_active_domain
 from heart import VideoOverlay
 from pathlib import Path
 from elevenlabs.play import play
-import datetime
+from datetime import datetime
+
 def speed_from_seconds(t):
     start = 500   # slow (ms)
-    end   = 50   # fast (ms)
+    end   = 80    # fast (ms) - safer than 50
     k = min(1.0, t / 15.0)
     return int(start + (end - start) * k)
 
@@ -26,22 +26,24 @@ def main():
     app = QtWidgets.QApplication(sys.argv)
 
     video_overlay = VideoOverlay(
-    Path(__file__).parent / "images" / "heart_animation.mp4",
-    size=(450, 450)
+        Path(__file__).parent / "images" / "heart_animation.mp4",
+        size=(450, 450)
     )
 
     voice_lock = threading.Lock()
     voice_busy = False
     teacher_present = False
     teacher_handled = False
+    teacher_enter_time = None  # ✅ persists
 
     def process_frame():
-        nonlocal army, overlay, voice_busy, teacher_present, teacher_handled
-        teacher_enter_time = 0
+        nonlocal army, overlay, voice_busy, teacher_present, teacher_handled, teacher_enter_time
 
         ok, frame = cam.cap.read()
         if not ok:
             return
+
+        now = time.monotonic()
 
         H, W = frame.shape[:2]
         cx, cy = W / 2.0, H / 2.0
@@ -59,17 +61,17 @@ def main():
         cam.other_hits.append(1 if found_other else 0)
         stable_other = (sum(cam.other_hits) >= cam.other_trigger)
 
-        is_teacher_now = (
-            cam.me_box is not None and stable_other and closest_box is not None
-        )
+        is_teacher_now = (cam.me_box is not None and stable_other and closest_box is not None)
 
         if is_teacher_now and not teacher_present:
             teacher_present = True
             teacher_handled = False
+            teacher_enter_time = now
 
         elif not is_teacher_now and teacher_present:
             teacher_present = False
             teacher_handled = False
+            teacher_enter_time = None
 
         if teacher_present and not teacher_handled:
             url, is_illegal = get_chrome_active_domain()
@@ -78,38 +80,48 @@ def main():
                 if army is None:
                     army = PopupImages("images/army1.png", "images/army2.png", 200)
 
-                
                 if overlay is None:
-                    #video_overlay.start()
                     overlay = HeartbeatOverlay()
                     overlay.show()
                     overlay.start_heartbeat()
                     overlay.start_shake_cursor()
-                elif overlay:
-                    elapsed = time.monotonic() - teacher_enter_time
-                    teacher_enter_time += 20
-                    speed_ms = speed_from_seconds(elapsed)
-                    print(speed_ms)
-                    overlay.set_speed(speed_ms)
+
+                if overlay and teacher_enter_time is not None:
+                    elapsed = now - teacher_enter_time
+                    overlay.set_speed(speed_from_seconds(elapsed))
 
                 def runner(u=url):
                     nonlocal voice_busy
                     try:
-                        audio_bytes, duration_ms = relaymessage(u)  # duration_ms must be int ms
+                        print("[audio] runner start")
+
+                        result = relaymessage(u)
+                        if not result:
+                            print("[audio] relaymessage failed (quota?). Skipping.")
+                            return
+
+                        audio_bytes, duration_ms = result
+                        if not audio_bytes:
+                            print("[audio] empty audio. Skipping.")
+                            return
+
+                        # start animation on Qt thread
+                        QtCore.QTimer.singleShot(
+                            0, app,
+                            lambda: (print(f"animation started at {datetime.now()}"),
+                                     army.start_animation() if army else None)
+                        )
+
+                        # play audio (blocking)
                         play(audio_bytes)
-                        # schedule UI actions on the Qt thread
-                        QtCore.QTimer.singleShot(0, lambda: (
-                            print(f"animation started at {datetime.now()}"),
-                            army.start_animation()
-                        ))
 
-                        QtCore.QTimer.singleShot(duration_ms, lambda: (
-                            print(f"animation stopped at {datetime.now()}"),
-                            army.stop_animation()
-                        ))
+                        # stop animation on Qt thread
+                        QtCore.QTimer.singleShot(
+                            0, app,
+                            lambda: (print(f"animation stopped at {datetime.now()}"),
+                                     army.stop_animation() if army else None)
+                        )
 
-                        # play audio (in this worker thread)
-                        
                     finally:
                         with voice_lock:
                             voice_busy = False
@@ -127,7 +139,6 @@ def main():
                 army = None
 
             if overlay:
-                #video_overlay.stop()
                 overlay.stop_heartbeat()
                 overlay.close()
                 overlay.deleteLater()
@@ -140,16 +151,12 @@ def main():
             app.quit()
 
         cam.frame_count += 1
-    
+
     timer = QtCore.QTimer()
     timer.timeout.connect(process_frame)
-    timer.start(1)  # ~1000 FPS max, camera will cap it anyway
+    timer.start(16)  
 
     sys.exit(app.exec())
-
-
-    
-
 
 if __name__ == "__main__":
     main()

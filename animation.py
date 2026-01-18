@@ -1,8 +1,8 @@
 from PySide6 import QtWidgets, QtCore, QtGui
-import sys, os, time
+import sys
 
 class PopupImages(QtWidgets.QWidget):
-    def __init__(self, img1_path, img2_path, latency=500):
+    def __init__(self, img1_path, img2_path, speed=200):
         super().__init__()
 
         self.setWindowFlags(
@@ -41,7 +41,7 @@ class PopupImages(QtWidgets.QWidget):
         self.label2.move(margin, screen.height() - self.pix1.height() - margin)
 
         self.running = True
-        self.latency = latency
+        self.latency = speed
 
         self.show()
         
@@ -75,7 +75,7 @@ class PopupImages(QtWidgets.QWidget):
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    popup = PopupImages("images/army1.png", "images/army2.png", 200)
+    popup = PopupImages("images/army1.png", "images/army2.png")
     popup.start_animation()
     QtCore.QTimer.singleShot(10000, lambda: (popup.stop_animation()))
     sys.exit(app.exec())
