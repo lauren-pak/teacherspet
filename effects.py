@@ -5,13 +5,15 @@ from pathlib import Path
 if platform.system() == "Darwin":
     from AppKit import NSApp, NSFloatingWindowLevel
 
+ # clamp so it never breaks
 
 class HeartbeatOverlay(QtWidgets.QWidget):
-    def __init__(self, speed=70, color=139, opacity=40, mp3_path=None, volume=0.8):
+    def __init__(self, speed=70, color=139, opacity=60, mp3_path=None, volume=0.6):
         super().__init__()
 
         self.setWindowFlags(
             QtCore.Qt.FramelessWindowHint |
+            QtCore.Qt.WindowStaysOnTopHint |
             QtCore.Qt.Tool
         )
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground, True)
@@ -150,7 +152,7 @@ class HeartbeatOverlay(QtWidgets.QWidget):
             self.height() // 2,
             max(self.width(), self.height()) // 2
         )
-        gradient.setColorAt(0.6, QtGui.QColor(0, 0, 0, 0))
+        gradient.setColorAt(0.8, QtGui.QColor(0, 0, 0, 0))
         gradient.setColorAt(1.0, QtGui.QColor(self.color, 0, 0, self.opacity))
         painter.fillRect(self.rect(), gradient)
 

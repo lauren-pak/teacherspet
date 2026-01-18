@@ -77,14 +77,23 @@ def main():
             url, is_illegal = get_chrome_active_domain()
 
             if is_illegal:
-                if army is None:
-                    army = PopupImages("images/army1.png", "images/army2.png", 200)
+                
+
 
                 if overlay is None:
                     overlay = HeartbeatOverlay()
                     overlay.show()
+
+                    overlay.raise_()  # bring overlay to front
+                    overlay.activateWindow()  # give it focus (helps on macOS)
+                    overlay.setAttribute(QtCore.Qt.WA_AlwaysStackOnTop)  # optional
+
+                    # Also ensure fade / heartbeat timers are running
                     overlay.start_heartbeat()
                     overlay.start_shake_cursor()
+                if army is None:
+                    army = PopupImages("images/army1.png", "images/army2.png", 200)
+                    army.raise_()
 
                 if overlay and teacher_enter_time is not None:
                     elapsed = now - teacher_enter_time
@@ -145,7 +154,7 @@ def main():
                 overlay = None
 
         cam._draw(frame, other_people, closest_box, closest_conf)
-        cv.imshow("TeachersPet's vision", frame)
+        #cv.imshow("TeachersPet's vision", frame)
 
         if cv.waitKey(1) & 0xFF == ord('q'):
             app.quit()
